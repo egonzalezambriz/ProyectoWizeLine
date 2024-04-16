@@ -1,0 +1,9 @@
+Reporte de Validacion de Modelos
+                          Test mse
+-----------------------------------------------------------------
+Linear Regression            5.629770992366412
+Elastic Net                  8.13740458015267
+Random Forest                5.179389312977099
+-----------------------------------------------------------------
+
+El modelo optimizado para generalizar es: RandomForestRegressor con mse: 5.058295964125561

@@ -1,3 +1,4 @@
+
 # Importar librerías
 import numpy as np
 import pandas as pd
@@ -6,9 +7,6 @@ import matplotlib.pyplot as plt
 import mlflow
 
 
-from sklearn.linear_model import LinearRegression, ElasticNet
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_squared_error
 from utils.visualization import histplots_figure, matrixCorrCoef_figure, boxplot_figure, dispersion_figure
 from utils.mseMetric import find_minMseMetric, print_mse_tests, metrics_report
 
@@ -17,11 +15,12 @@ from data.loadData import load_data
 from data.splitData import split_dataset
 
 from models.experiments import do_experiment
-from models.validate import validateModel_withValuationDataset
+from models.validateBestModel import validateBestModel_withValuationDataset
 from models.predictAgeAbalon import predict_abalonRings_withUserData
-from models.experiments import gen_gridSearchHiperParam
+from models.optimizeModel import gen_gridSearchHiperParam
 from models.adminWithMLFlow import get_metadataOfBestModel
-
+from models.trainModels import initialTrainModels
+from models.trialModels import testModels_gettingMSE
 
 
 
@@ -95,18 +94,10 @@ def predictAbalonAge (printImages=0) :
     # --------------------------------------------------------
     #       E    N   T   R   E   N   A   M   I   E   N   T   O
     # --------------------------------------------------------
-    print ('Inicia entrenamiento ...')
+
+    linear_model, rf_model, en_model = initialTrainModels (X_train, y_train)
+
     
-    # Se entrenan 3 modelos con algoritmos diferentes para ajustarlos a los datos de entrenamiento
-    linear_model = LinearRegression()
-    linear_model.fit(X_train, y_train)
-
-    rf_model = RandomForestRegressor(n_estimators=100, max_features=2, max_depth=5, random_state=42)
-    rf_model.fit(X_train, y_train)
-
-    en_model = ElasticNet(alpha=0.1, l1_ratio=0.1, max_iter=1000, tol=0.001, random_state=42)
-    en_model.fit(X_train, y_train)
-
 
 
 
@@ -116,19 +107,10 @@ def predictAbalonAge (printImages=0) :
     
     # Calcular las desviaciones entre los datos reales del conjunto de prueba contra los datos predichos por los modelos 
 
-    print ('Inician pruebas ...')
-
-    
-    y_pred_linear_test = np.round(linear_model.predict(X_test))         # Predicciones con Regresion Lineal en conjunto de datos de prueba
-    mse_linear_test = mean_squared_error(y_test, y_pred_linear_test)    # Metrica error cuadrático medio para regresion lineal
-    
-    y_pred_en_test = np.round(en_model.predict(X_test))                 # Predicciones con Elastic net en conjunto de datos de prueba    
-    mse_en_test = mean_squared_error(y_test, y_pred_en_test)            # Metrica error cuadrático medio para regesion elastic net
+    mse_linear_test,  mse_en_test,  mse_rf_test  = testModels_gettingMSE (linear_model, en_model, rf_model, X_test, y_test)
+ 
     
     
-    y_pred_rf_test = np.round(rf_model.predict(X_test))                 # Predicciones con Random Forest en conjunto de datos de prueba       
-    mse_rf_test = mean_squared_error(y_test, y_pred_rf_test)            # Metrica error cuadrático medio para Random forest
-        
     # Se elije el modelo con la mejor métrica
     models = ['LinearRegression','ElasticNet','RandomForestRegressor']
     test_min_mse, min_idx = find_minMseMetric (mse_linear_test, mse_en_test, mse_rf_test)
@@ -187,9 +169,10 @@ def predictAbalonAge (printImages=0) :
     # Se obtienen algunos metadatos del modelo con el mejor rendimiento
     info_entry = get_metadataOfBestModel (performanceRunningLst)
      
-    flg = validateModel_withValuationDataset (X_val, y_pred_val, y_val, info_entry['model'])
-
-
+    flg, predictions_df = validateBestModel_withValuationDataset (X_val, y_pred_val, y_val, info_entry['model'])
+   
+    # Imprimir el DataFrame predictions_df
+    print(predictions_df)
 
     # Se escribe el reporte de las métricas
     metrics_report (mse_linear_test, mse_en_test, mse_rf_test, mse_val1, mse_val2, test_best_model)

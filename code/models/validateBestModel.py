@@ -2,13 +2,11 @@
 import pandas as pd
 import numpy as np
 
-from utils.visualization import twoSubplotsScatters_figure
-from models.adminWithMLFlow import load_bestModelFromMLFlow
 
 
 
 # ============================================================================================================
-def validateModel_withValuationDataset(X_val, y_pred_evaluation, y_val, info_entry_model) :
+def validateBestModel_withValuationDataset(X_val, y_pred_evaluation, y_val, info_entry_model) :
 # ============================================================================================================
     '''
     Se predice la edad del abulon para todo el dataset de valuacion
@@ -30,10 +28,7 @@ def validateModel_withValuationDataset(X_val, y_pred_evaluation, y_val, info_ent
     # Concatenar las predicciones con X_val y y_val_real
     predictions_df = pd.concat([X_val.reset_index(drop=True), predictions_df, y_val_real], axis=1)
 
-    # Imprimir el DataFrame predictions_df
-    print(predictions_df)
-
-    return flg
+    return flg, predictions_df
 
 
 

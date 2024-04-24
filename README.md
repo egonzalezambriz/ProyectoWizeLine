@@ -9,7 +9,7 @@ Crear entorno virtual:
 python -m venv venv
 ```
 
-Ejecutar entorno virtual:
+Activar entorno virtual:
 
 ```cmd
 activate

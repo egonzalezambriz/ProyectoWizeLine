@@ -12,16 +12,18 @@ def load_data () :
     '''
 
     # Cargar los datos y los nombres de las columnas del dataset a analizar y sobre el que se realizarán predicciones
-    data_Mtrx = pd.read_csv("C:\\Users\\52477\\Documents\\ProyectoWizeLine\\data\\row\\abalone.data")
+    data_Mtrx = pd.read_csv("C:\\Users\\52477\\Documents\\ProyectoWizeLine\\data\\raw\\abalone.data")
     names_Arr = pd.array(['Sex','Length','Diameter','Height','Whole_weight','Shucked_weight','Viscera_weight','Shell_weight','Rings'])
 
     # Asignar nombres de columnas
     data_Mtrx.columns = names_Arr
 
+    # Convertir la columna 'Rings' a tipo int
+    data_Mtrx['Rings'] = data_Mtrx['Rings'].astype(int)
     
    
     # Informacion y descripcion de los datos
-    print ('Información y descripción de las características del dataset avalon.data')
+    print ('Información y descripción de las características del dataset abalone.data')
     print ('------------------------------------------------------------------------')
     data_Mtrx.info()
     print ("\n")

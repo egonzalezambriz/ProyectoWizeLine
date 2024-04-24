@@ -5,9 +5,6 @@ import pandas as pd
 from sklearn.impute import SimpleImputer
 
 
-
-
-
 # ================================================================================================
 def preprocess_data (data_Mtrx) :
 # ================================================================================================
@@ -34,8 +31,8 @@ def preprocess_data (data_Mtrx) :
             if row[col] == 0:
                 data_Fr.at[index, col] = column_means[col]
 
-
     return data_Mtrx, cols_names_Arr, cols_ImputerNames_Arr, data_Fr
+
 
 
 

@@ -25,8 +25,17 @@ Ejecutar runAll.bat ubicado en PROYECTOWIZELINE para ejecutar pruebas unitarias 
 
 ```cmd
 .\runAll.bat
-<<<<<<< HEAD
 ```
-=======
+
+
+Para predecir con el modelo
+
+```cmd
+uvicorn code.predict_ageAbalon:app --reload
 ```
->>>>>>> 1d0fb207657f7fd04f3f0a4033df649b512429c1
+
+y en el navegador de internet revisar la documentación de FastAPI
+
+http://127.0.0.1:8000/docs
+
+

@@ -25,4 +25,8 @@ Ejecutar runAll.bat ubicado en PROYECTOWIZELINE para ejecutar pruebas unitarias 
 
 ```cmd
 .\runAll.bat
+<<<<<<< HEAD
 ```
+=======
+```
+>>>>>>> 1d0fb207657f7fd04f3f0a4033df649b512429c1

@@ -21,8 +21,8 @@ Instalar dependencias:
 pip install -r requirements.txt
 ```
 
-Ejecutar main.py ubicado en PROYECTOWIZELINE/code
+Ejecutar runAll.bat ubicado en PROYECTOWIZELINE para ejecutar pruebas unitarias y de integración con pytest y enseguida la corrida del modelo con main.py
 
 ```cmd
-main.py
+.\runAll.bat
 ```

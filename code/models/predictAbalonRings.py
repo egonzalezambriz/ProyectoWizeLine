@@ -1,7 +1,7 @@
 
 import pandas as pd
 import numpy as np
-from models.adminWithMLFlow import load_bestModelFromMLFlow
+from code.models.adminWithMLFlow import load_bestModelFromMLFlow
 
 
 

@@ -5,7 +5,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import mlflow
-
+import json
 
 from utils.visualization import histplots_figure, matrixCorrCoef_figure, boxplot_figure, dispersion_figure
 from utils.mseMetric import find_minMseMetric, print_mse_tests, metrics_report
@@ -16,7 +16,7 @@ from data.splitData import split_dataset
 
 from models.experiments import do_experiment
 from models.validateBestModel import validateBestModel_withValuationDataset
-from models.predictAgeAbalon import predict_abalonRings_withUserData
+
 from models.optimizeModel import gen_gridSearchHiperParam
 from models.adminWithMLFlow import get_metadataOfBestModel
 from models.trainModels import initialTrainModels
@@ -106,10 +106,8 @@ def predictAbalonAge (printImages=0) :
     # --------------------------------------------------------
     
     # Calcular las desviaciones entre los datos reales del conjunto de prueba contra los datos predichos por los modelos 
-
     mse_linear_test,  mse_en_test,  mse_rf_test  = testModels_gettingMSE (linear_model, en_model, rf_model, X_test, y_test)
  
-    
     
     # Se elije el modelo con la mejor métrica
     models = ['LinearRegression','ElasticNet','RandomForestRegressor']
@@ -179,26 +177,18 @@ def predictAbalonAge (printImages=0) :
 
 
 
+    # Suponiendo que 'info_entry' es tu diccionario y 'flg' es tu string
+    data = {
+            "info_entry": info_entry,
+            "flg": flg
+            }
 
-    print ('Predicción de la edad de un abulón ...')
+    # Guardar el diccionario en un archivo JSON
+    with open('predict_vars.json', 'w') as file:
+        json.dump(data, file, indent=4)             # Especificar indent=4 para una mejor legibilidad del archivo JSON
 
-    # Se cargará desde MLFLow el modelo con el mejor rendimiento y con los valores de atributos o variables de entrada 
-    # se predecirá el numero de anillos y por tanto la edad de un abulon
-    X_new = [[0,0]]                                      # Inicializamos la matriz de datos nuevos
-    X_new [0][0]  = 0.114                                # peso caparazón
-    X_new [0][1] =  0.295                                # diametro 
-
-    y_pred_new_rounded = predict_abalonRings_withUserData (X_new, info_entry, flg) 
-    abalon_age = y_pred_new_rounded + 1.5                # Se suma el factor 1.5 para obtener la edad del abalón
-    
-    # Impresion de resultados
-    print ('Peso caparazon: ', X_new [0][0], ' Diámetro: ', X_new [0][1], ' Número anillos predecidos abulón: ', y_pred_new_rounded, ' edad predecida: ', abalon_age)
 
     
-
-
-
-
 
 # ================================================================================================
 #                          ENTRADA PRINCIPAL AL CODIGO

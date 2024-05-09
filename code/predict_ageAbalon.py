@@ -1,5 +1,5 @@
-# Para ejecutar la prediccion: uvicorn code.predict_ageAbalon:app --reload
-# Debe correrse en el browser de internet para interactuar con el modelo:  http://localhost:8000/docs
+# Para prediccion, correr en consola: uvicorn code.predict_ageAbalon:app --reload
+# Correr en browser de internet:  http://localhost:8000/docs
 
 
 import json

@@ -22,6 +22,7 @@ class TestValidation(unittest.TestCase):
         self.info_entry_model = 'LinearRegression'
 
 
+
     # -------------------------------------------------
     def test_output_type(self):
     # -------------------------------------------------
@@ -32,6 +33,8 @@ class TestValidation(unittest.TestCase):
         # Verifica el tipo de dato de salida
         result, _ = validateBestModel_withValuationDataset(self.X_val, self.y_pred_evaluation, self.y_val, self.info_entry_model)
         self.assertIsInstance(result, str)
+
+
 
     # -------------------------------------------------
     def test_output_format(self):

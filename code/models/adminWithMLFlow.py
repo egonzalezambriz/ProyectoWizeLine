@@ -12,15 +12,15 @@ from code.utils.mseMetric import print_mseMetrics
 
 
 # ============================================================================================================================
-def do_runningsModels (validation_best_model, test_best_model, test_min_mse, X_train, X_val, y_train, y_val, test_size, performanceRunningsLst) :
+def do_runningsModels (validation_best_model, test_best_model, test_min_mse, X_train, X_val, y_train, y_val, test_size, performanceRunningsLst, data_file) :
 # ============================================================================================================================
 
     ''' 
     Se realizan las corridas del modelo seleccionado como el mejor de las pruebas
     '''
+    
     print ('validation_best_model: ', validation_best_model)
 
-    
     if (test_best_model == 'LinearRegression') :
         i = 0
     
@@ -39,7 +39,7 @@ def do_runningsModels (validation_best_model, test_best_model, test_min_mse, X_t
         # guarda en MLFlow
         mlflow.log_param("test_size", test_size)
         mlflow.log_param("modelo", validation_best_model.__class__.__name__)
-
+       
         if test_best_model == 'LinearRegression':
             mlflow.log_param("fit_intercept", validation_best_model.fit_intercept)
             mlflow.log_param("n_jobs", validation_best_model.n_jobs)
@@ -75,11 +75,12 @@ def do_runningsModels (validation_best_model, test_best_model, test_min_mse, X_t
         # Obtener el experiment_id y run_id dentro del contexto del run actual
         experiment_id = mlflow.active_run().info.experiment_id
         run_id = mlflow.active_run().info.run_id
+        mlflow.set_tag("dataset", data_file)
 
         # Se agrega la corrida a la lista de experimentos  
         performanceRunningsLst.append ({'experiment_id': experiment_id, 'run_id': run_id, 'model': test_best_model, 'mse_val': mse_val} )
 
-
+    
     # Finaliza la corrida
     mlflow.end_run()
     

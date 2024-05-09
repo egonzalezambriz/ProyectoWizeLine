@@ -1,4 +1,19 @@
 
+# Para correr modelo, ejecutar en consola: 
+# python code\main.py data\raw\abaloneNuevo.data.dvc C:\Users\52477\Documents\ProyectoWizeLine\
+# python code\main.py data\raw\abalone.data.dvc .\
+
+# Para ejecutar pruebas
+# Correr en consola: pytest -v
+
+# Para revisar experimentos, comando en consola: mlflow ui
+# Correr en browser de internet: http://127.0.0.1:5000
+
+# Para ejecutar predicciones, comando en consola: uvicorn code.predict_ageAbalon:app --reload
+# Correr en browser de internet: http://localhost:8000/docs
+
+
+
 # Importar librerías
 import numpy as np
 import pandas as pd
@@ -6,6 +21,10 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import mlflow
 import json
+import sys
+import dvc.api
+import os
+
 
 from utils.visualization import histplots_figure, matrixCorrCoef_figure, boxplot_figure, dispersion_figure
 from utils.mseMetric import find_minMseMetric, print_mse_tests, metrics_report
@@ -27,7 +46,7 @@ from models.trialModels import testModels_gettingMSE
 
 
 # ================================================================================================
-def predictAbalonAge (printImages=0) :
+def predictAbalonAge (data_file) :
 # ================================================================================================
 
     # -------------------------------------------------------------------------------------------------------------------
@@ -39,29 +58,29 @@ def predictAbalonAge (printImages=0) :
     # si se considera como una variable numérica continua
   
     # Obtencion de datos y generacion de la informacion que contiene
-    data_Mtrx, names_Arr = load_data()
+    data_Mtrx, names_Arr = load_data(data_file)
 
     # Conversiones e imputaciones de datos por datos faltantes
     data_Mtrx, cols_names_Arr, cols_ImputerNames_Arr, data_Fr = preprocess_data (data_Mtrx)
 
     # Graficas de exploracion de datos
-    if ( printImages == 1 ) :
+   
         
-        # Desplegar histogramas de los principales atributos
-        # Se notará que prácticamente todos son aproximaciones de distribuciones normales con excepcion de 'Height' que está muy cargado 2 dos rangos
-        histplots_figure (data_Fr, cols_ImputerNames_Arr, nrows=2, ncols=4)
+    # Desplegar histogramas de los principales atributos
+    # Se notará que prácticamente todos son aproximaciones de distribuciones normales con excepcion de 'Height' que está muy cargado 2 dos rangos
+    histplots_figure (data_Fr, cols_ImputerNames_Arr, nrows=2, ncols=4)
 
 
-        # Se deducirá que las variables de entrada mas correlacionadas con la variable de salida son:
-        # 'Shell_weight', 'Diameter','Length' y 'Height', de las que se elegirán para las predicciones las 2 primeras por cumplir con los criterios 
-        matrixCorrCoef_figure (data_Fr, cols_names_Arr)
+    # Se deducirá que las variables de entrada mas correlacionadas con la variable de salida son:
+    # 'Shell_weight', 'Diameter','Length' y 'Height', de las que se elegirán para las predicciones las 2 primeras por cumplir con los criterios 
+    matrixCorrCoef_figure (data_Fr, cols_names_Arr)
 
 
-        # Graficar diagramas de caja para variables de entrada de manera que se visualicen los valores atípicos
-        # De las dos características seleccionadas anteriormente, se notará que :
-        # 'Shell_weight' tiene valores atípicos en la parte alta de la gráfica
-        # 'Diameter' tiene valores atípicos en la parte baja de la gráfica            
-        boxplot_figure (data_Fr, ['Length','Diameter','Height','Whole_weight','Shucked_weight','Viscera_weight','Shell_weight'])
+    # Graficar diagramas de caja para variables de entrada de manera que se visualicen los valores atípicos
+    # De las dos características seleccionadas anteriormente, se notará que :
+    # 'Shell_weight' tiene valores atípicos en la parte alta de la gráfica
+    # 'Diameter' tiene valores atípicos en la parte baja de la gráfica            
+    boxplot_figure (data_Fr, ['Length','Diameter','Height','Whole_weight','Shucked_weight','Viscera_weight','Shell_weight'])
 
     
     
@@ -70,30 +89,23 @@ def predictAbalonAge (printImages=0) :
     data_Fr = remove_outliers(data_Fr, column='Diameter', lower_percentile=0.075, upper_percentile=1)
     print ('data_Fr.shape: ', data_Fr.shape)
 
-    if ( printImages == 1 ) :
+   
 
-        # Diagramas de dispersión para pares de variables
-        # Se confirma que las caracteristicas 'Shell_weight' y 'Diameter' están muy relacionadas con las demás variables de entrada
-        
-        dispersion_figure (data_Fr, cols_names_Arr)
+    # Diagramas de dispersión para pares de variables
+    # Se confirma que las caracteristicas 'Shell_weight' y 'Diameter' están muy relacionadas con las demás variables de entrada     
+    dispersion_figure (data_Fr, cols_names_Arr)
 
     
     
 
-
-    # ---------------------------------------------------------------------------------------------------
+    # ----------------------------------------------------------------
     #   S   E   P   A   R   A   C   I   O   N       D   A   T   O   S
-    # ---------------------------------------------------------------------------------------------------
+    #       E    N   T   R   E   N   A   M   I   E   N   T   O
+    # ----------------------------------------------------------------
+    
     test_size = 0.15
     print ('test_size: ', test_size)
     X, y, X_train, y_train, X_test, y_test, X_val, y_val = split_dataset (test_size, data_Fr [['Shell_weight','Diameter']], data_Fr ['Rings'])
-
-
-
-
-    # --------------------------------------------------------
-    #       E    N   T   R   E   N   A   M   I   E   N   T   O
-    # --------------------------------------------------------
 
     linear_model, rf_model, en_model = initialTrainModels (X_train, y_train)
 
@@ -132,25 +144,23 @@ def predictAbalonAge (printImages=0) :
 
 
     print ('Inicia experimento 1 ...')
-    # Iniciar experimento version 1
-    experiment_name = "Abalon/V1"
+    experiment_name = "Abalon/V1"               # Iniciar experimento version 1
     mlflow.set_experiment(experiment_name)
     test_size = 0.10
     if 'LinearRegression' in test_best_model :
-        X_val, y_val, y_pred_val, mse_val1 = do_experiment (test_best_model, test_min_mse, param_grid, test_size, performanceRunningLst, X_train, y_train, X_val, y_val)
+        y_pred_val, mse_val1 = do_experiment (test_best_model, test_min_mse, param_grid, test_size, performanceRunningLst, X_train, y_train, X_val, y_val, data_file)
     elif 'ElasticNet' in test_best_model or 'RandomForestRegressor' in test_best_model :
-        X_val, y_val, y_pred_val, mse_val1 = do_experiment (test_best_model, test_min_mse, param_grid[0], test_size, performanceRunningLst, X_train, y_train, X_val, y_val)
+        y_pred_val, mse_val1 = do_experiment (test_best_model, test_min_mse, param_grid[0], test_size, performanceRunningLst, X_train, y_train, X_val, y_val, data_file)
  
 
     print ('Inicia experimento 2 ...')
-    # Iniciar experimento version 2
-    experiment_name = "Abalon/V2"
+    experiment_name = "Abalon/V2"               # Iniciar experimento version 2
     mlflow.set_experiment(experiment_name)
     test_size = 0.20
     if test_best_model == 'LinearRegression' :
-        X_val, y_val, y_pred_val, mse_val2 = do_experiment (test_best_model, test_min_mse, param_grid, test_size, performanceRunningLst, X_train, y_train, X_val, y_val)
+        y_pred_val, mse_val2 = do_experiment (test_best_model, test_min_mse, param_grid, test_size, performanceRunningLst, X_train, y_train, X_val, y_val, data_file)
     elif test_best_model == 'ElasticNet' or test_best_model == 'RandomForestRegressor' :
-        X_val, y_val, y_pred_val, mse_val2 = do_experiment (test_best_model, test_min_mse, param_grid[1], test_size, performanceRunningLst, X_train, y_train, X_val, y_val)
+        y_pred_val, mse_val2 = do_experiment (test_best_model, test_min_mse, param_grid[1], test_size, performanceRunningLst, X_train, y_train, X_val, y_val, data_file)
 
 
     
@@ -190,10 +200,41 @@ def predictAbalonAge (printImages=0) :
 
     
 
+
+
+
+
+
 # ================================================================================================
 #                          ENTRADA PRINCIPAL AL CODIGO
 # ================================================================================================
 if __name__ == "__main__":
-    predictAbalonAge(1)
-    print ('F    I   N   A   L   I   Z   A   C   I   O   N')
+    # Verificar que se proporcionen los argumentos esperados
+    if len(sys.argv) != 3:
+        print("Uso: python main.py <data_file_dvc> <path_repo_dvc>")
+        sys.exit(1)
+       
+    # Obtener los nombres de archivo y el repositorio DVC de los argumentos de la línea de comandos
+    data_file_dvc = sys.argv[1]  
+    path_repo_dvc = sys.argv[2]
+   
+    
+    print ('************************************************************')
+    print ('data_file_dvc: ', data_file_dvc)
+    print ('path_repo_dvc: ', path_repo_dvc)
+    print ('************************************************************')
 
+    data_file_name = data_file_dvc[:-4]
+    print ('************************************************************')
+    print ('data_file_name: ', data_file_name)
+    print ('************************************************************')
+
+    fullPath_data_file_name = dvc.api.get_url(path_repo_dvc + data_file_name)
+    
+    print ('************************************************************')
+    print ('fullPath_data_file_name: ', fullPath_data_file_name)
+    print ('************************************************************')
+
+   
+    predictAbalonAge(fullPath_data_file_name)
+    print ('F    I   N   A   L   I   Z   A   C   I   O   N')

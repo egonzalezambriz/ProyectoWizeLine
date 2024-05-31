@@ -1,6 +1,10 @@
+# ##############################################
+# Proyecto de MLOps para Bootcamp con Wizeline
+# Autor: Edgar Gonzalez Ambriz
+# Fecha : Mayo 2024
+# ##############################################
 
 # Para correr modelo, ejecutar en consola: 
-# python code\main.py data\raw\abaloneNuevo.data.dvc C:\Users\52477\Documents\ProyectoWizeLine\
 # python code\main.py data\raw\abalone.data.dvc .\
 
 # Para ejecutar pruebas
@@ -35,12 +39,11 @@ from data.splitData import split_dataset
 
 from models.experiments import do_experiment
 from models.validateBestModel import validateBestModel_withValuationDataset
-
 from models.optimizeModel import gen_gridSearchHiperParam
 from models.adminWithMLFlow import get_metadataOfBestModel
 from models.trainModels import initialTrainModels
 from models.trialModels import testModels_gettingMSE
-
+from models.trialModels import testModels_gettingStatistics
 
 
 
@@ -98,8 +101,17 @@ def predictAbalonAge (data_file) :
     
     
 
+
+
     # ----------------------------------------------------------------
     #   S   E   P   A   R   A   C   I   O   N       D   A   T   O   S
+    # ----------------------------------------------------------------
+
+
+
+
+
+    # ----------------------------------------------------------------
     #       E    N   T   R   E   N   A   M   I   E   N   T   O
     # ----------------------------------------------------------------
     
@@ -111,15 +123,12 @@ def predictAbalonAge (data_file) :
 
     
 
-
-
     # --------------------------------------------------------
     #       P    R   U   E   B   A   S
     # --------------------------------------------------------
     
     # Calcular las desviaciones entre los datos reales del conjunto de prueba contra los datos predichos por los modelos 
     mse_linear_test,  mse_en_test,  mse_rf_test  = testModels_gettingMSE (linear_model, en_model, rf_model, X_test, y_test)
- 
     
     # Se elije el modelo con la mejor métrica
     models = ['LinearRegression','ElasticNet','RandomForestRegressor']
@@ -128,7 +137,12 @@ def predictAbalonAge (data_file) :
     
     print_mse_tests (mse_linear_test, mse_en_test, mse_rf_test)
     
-    
+    # Calcular media y varianza de las variables de entrada (atributos)
+    stats_X_test = testModels_gettingStatistics (X_test)
+    print ('Shell_weight avg: ', float("{:.6f}".format(stats_X_test['mean_X_test'][0])), 'Shell_weight var: ', float("{:.6f}".format(stats_X_test['var_X_test'][0])))
+    print ('Diameter avg: ', float("{:.6f}".format(stats_X_test['mean_X_test'][1])), 'Diameter var: ', float("{:.6f}".format(stats_X_test['var_X_test'][1])))
+    print ("---------------------------------------------------------------------------------------------")
+
 
 
 
@@ -148,9 +162,9 @@ def predictAbalonAge (data_file) :
     mlflow.set_experiment(experiment_name)
     test_size = 0.10
     if 'LinearRegression' in test_best_model :
-        y_pred_val, mse_val1 = do_experiment (test_best_model, test_min_mse, param_grid, test_size, performanceRunningLst, X_train, y_train, X_val, y_val, data_file)
+        y_pred_val, mse_val1 = do_experiment (test_best_model, test_min_mse, stats_X_test, param_grid, test_size, performanceRunningLst, X_train, y_train, X_val, y_val, data_file)
     elif 'ElasticNet' in test_best_model or 'RandomForestRegressor' in test_best_model :
-        y_pred_val, mse_val1 = do_experiment (test_best_model, test_min_mse, param_grid[0], test_size, performanceRunningLst, X_train, y_train, X_val, y_val, data_file)
+        y_pred_val, mse_val1 = do_experiment (test_best_model, test_min_mse, stats_X_test, param_grid[0], test_size, performanceRunningLst, X_train, y_train, X_val, y_val, data_file)
  
 
     print ('Inicia experimento 2 ...')
@@ -158,9 +172,9 @@ def predictAbalonAge (data_file) :
     mlflow.set_experiment(experiment_name)
     test_size = 0.20
     if test_best_model == 'LinearRegression' :
-        y_pred_val, mse_val2 = do_experiment (test_best_model, test_min_mse, param_grid, test_size, performanceRunningLst, X_train, y_train, X_val, y_val, data_file)
+        y_pred_val, mse_val2 = do_experiment (test_best_model, test_min_mse, stats_X_test, param_grid, test_size, performanceRunningLst, X_train, y_train, X_val, y_val, data_file)
     elif test_best_model == 'ElasticNet' or test_best_model == 'RandomForestRegressor' :
-        y_pred_val, mse_val2 = do_experiment (test_best_model, test_min_mse, param_grid[1], test_size, performanceRunningLst, X_train, y_train, X_val, y_val, data_file)
+        y_pred_val, mse_val2 = do_experiment (test_best_model, test_min_mse, stats_X_test, param_grid[1], test_size, performanceRunningLst, X_train, y_train, X_val, y_val, data_file)
 
 
     
@@ -188,10 +202,7 @@ def predictAbalonAge (data_file) :
 
 
     # Suponiendo que 'info_entry' es tu diccionario y 'flg' es tu string
-    data = {
-            "info_entry": info_entry,
-            "flg": flg
-            }
+    data = { "info_entry": info_entry, "flg": flg }
 
     # Guardar el diccionario en un archivo JSON
     with open('predict_vars.json', 'w') as file:
@@ -224,6 +235,7 @@ if __name__ == "__main__":
     print ('path_repo_dvc: ', path_repo_dvc)
     print ('************************************************************')
 
+    # quitar extensión '.dvc'
     data_file_name = data_file_dvc[:-4]
     print ('************************************************************')
     print ('data_file_name: ', data_file_name)

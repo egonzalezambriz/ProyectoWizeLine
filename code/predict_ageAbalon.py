@@ -1,6 +1,6 @@
+
 # Para prediccion, correr en consola: uvicorn code.predict_ageAbalon:app --reload
 # Correr en browser de internet:  http://localhost:8000/docs
-
 
 import json
 import pandas as pd

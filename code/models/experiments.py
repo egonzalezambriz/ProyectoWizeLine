@@ -6,7 +6,7 @@ from code.models.adminWithMLFlow import do_runningsModels
 
 
 # ====================================================================================================================================================================
-def do_experiment (test_best_model, test_min_mse, param_grid, test_size, performanceRunningsLst, X_train, y_train, X_val, y_val, data_file) :
+def do_experiment (test_best_model, test_min_mse, stats_X_test, param_grid, test_size, performanceRunningsLst, X_train, y_train, X_val, y_val, data_file) :
 # ====================================================================================================================================================================
 
     '''
@@ -20,7 +20,7 @@ def do_experiment (test_best_model, test_min_mse, param_grid, test_size, perform
     validation_best_model = get_optimizedValidationModel (param_grid, test_best_model, X_train, y_train) 
         
     # Corridas del experimento
-    y_pred_val, mse_val = do_runningsModels (validation_best_model, test_best_model, test_min_mse, X_train, X_val, y_train, y_val, test_size, performanceRunningsLst, data_file) 
+    y_pred_val, mse_val = do_runningsModels (validation_best_model, test_best_model, test_min_mse, stats_X_test, X_train, X_val, y_train, y_val, test_size, performanceRunningsLst, data_file) 
 
     return y_pred_val, mse_val
 

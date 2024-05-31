@@ -1,0 +1,58 @@
+# Base de la imagen para el proyecto ML
+FROM python:3.12.1-slim
+
+# Establecer el directorio de trabajo
+WORKDIR /app
+
+# Copiar el archivo de requerimientos antes de instalar las dependencias
+COPY requirements.txt .
+
+# Crear un entorno virtual en el contenedor
+RUN python -m venv venvProyWizeline
+
+# Instalar las dependencias dentro del entorno virtual
+RUN venvProyWizeline/bin/pip install --upgrade pip && \
+    venvProyWizeline/bin/pip install -r requirements.txt
+
+# Copiar todos los archivos necesarios al directorio de trabajo
+COPY . .
+
+# Exponer los puertos necesarios para FastAPI
+EXPOSE 80
+
+# Instalar MLFlow dentro del entorno virtual
+RUN venvProyWizeline/bin/pip install mlflow
+
+# Configurar la variable de entorno MLFLOW_TRACKING_URI para almacenar los registros en un directorio dentro del contenedor
+ENV MLFLOW_TRACKING_URI file:///mlflow
+
+# Indicar un volumen Docker para persistir los registros de experimentos
+VOLUME /mlflow
+
+# Instalar DVC en el entorno virtual
+RUN venvProyWizeline/bin/pip install dvc
+
+# Inicializar DVC
+RUN . venvProyWizeline/bin/activate && dvc init -f
+
+# Configurar el remoto de DVC
+RUN . venvProyWizeline/bin/activate && dvc remote add -d myremote /mlflow
+
+# Añadir archivos de datos a DVC
+RUN . venvProyWizeline/bin/activate && dvc add /app/data/raw/abalone.data
+RUN . venvProyWizeline/bin/activate && dvc add /app/data/raw/abaloneNuevo.data
+
+# Hacer push de los datos a DVC
+RUN . venvProyWizeline/bin/activate && dvc push
+
+# Ejecutar `dvc pull` para obtener los datos
+RUN . venvProyWizeline/bin/activate && dvc pull
+
+# Establecer el directorio de trabajo para la aplicación
+WORKDIR /app
+
+# Establecer PYTHONPATH
+ENV PYTHONPATH=/app
+
+# Establecer el comando CMD para ejecutar el comando "fastapi"
+CMD ["venvProyWizeline/bin/python", "/app/code/main.py", "/app/data/raw/abalone.data.dvc", "/app"]

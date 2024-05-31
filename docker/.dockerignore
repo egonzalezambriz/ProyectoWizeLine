@@ -1,0 +1,43 @@
+# Archivos y directorios específicos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Control de versiones
+.git
+.gitignore
+.gitattributes
+
+# Dependencias locales y archivos compilados
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+
+# Entornos virtuales
+venv/
+env/
+
+# Archivos de configuración locales
+.env
+.env.*
+
+# Logs y temporales
+*.log
+*.tmp
+
+# Archivos y directorios específicos de IDE
+.vscode/
+.idea/
+
+# Datos grandes
+data/
+datasets/
+*.h5
+*.csv
+*.tsv
+*.pkl
+
+# Directorios de salida de compilación
+build/
+dist/
+*.egg-info

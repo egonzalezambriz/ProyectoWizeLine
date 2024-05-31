@@ -11,9 +11,9 @@ from code.utils.mseMetric import print_mseMetrics
 
 
 
-# ============================================================================================================================
-def do_runningsModels (validation_best_model, test_best_model, test_min_mse, X_train, X_val, y_train, y_val, test_size, performanceRunningsLst, data_file) :
-# ============================================================================================================================
+# ========================================================================================================================================================
+def do_runningsModels (validation_best_model, test_best_model, test_min_mse, stats_X_test, X_train, X_val, y_train, y_val, test_size, performanceRunningsLst, data_file) :
+# ========================================================================================================================================================
 
     ''' 
     Se realizan las corridas del modelo seleccionado como el mejor de las pruebas
@@ -75,7 +75,12 @@ def do_runningsModels (validation_best_model, test_best_model, test_min_mse, X_t
         # Obtener el experiment_id y run_id dentro del contexto del run actual
         experiment_id = mlflow.active_run().info.experiment_id
         run_id = mlflow.active_run().info.run_id
-        mlflow.set_tag("dataset", data_file)
+        mlflow.set_tag ("dataset", data_file)
+        mlflow.set_tag ('Shell_weight avg', float("{:.6f}".format(stats_X_test['mean_X_test'][0])))
+        mlflow.set_tag ('Shell_weight var', float("{:.6f}".format(stats_X_test['var_X_test'][0])))       
+        mlflow.set_tag ('Diameter avg', float("{:.6f}".format(stats_X_test['mean_X_test'][1])))
+        mlflow.set_tag ('Diameter var', float("{:.6f}".format(stats_X_test['var_X_test'][1])))       
+
 
         # Se agrega la corrida a la lista de experimentos  
         performanceRunningsLst.append ({'experiment_id': experiment_id, 'run_id': run_id, 'model': test_best_model, 'mse_val': mse_val} )

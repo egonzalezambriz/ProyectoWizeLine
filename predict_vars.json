@@ -1,7 +1,7 @@
 {
     "info_entry": {
         "experiment_id": "264903437442838465",
-        "run_id": "bd61ab3df9994567827c897e7f15b661",
+        "run_id": "fd8fc5ab34654e8a96b122bf0a69d709",
         "model": "RandomForestRegressor",
         "mse_val": 5.058295964125561
     },
